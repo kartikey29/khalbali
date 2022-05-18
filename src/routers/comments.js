@@ -78,19 +78,19 @@ router.get("/:post_id", async (req, res) => {
 router.post("/", isAuthenticated, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { body, post_id, parent_comment_id } = req.body;
+    const { body, postId, commentId } = req.body;
     if (!body) {
       throw new Error("Must specify comment body");
     }
-    if (!post_id) {
+    if (!postId) {
       throw new Error("Must specify post to comment on");
     }
 
     const newComment = await Comment.create({
       body: body,
       userId,
-      postId: post_id,
-      commentId: parent_comment_id,
+      postId: postId,
+      commentId: commentId,
     });
     console.log(newComment);
     newComment.save();

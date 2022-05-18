@@ -1,5 +1,6 @@
 function isLoggedIn(req, res, next) {
-  req.isAuthenticated() ? next() : res.sendStatus(401)
+  console.log(req.isAuthenticated());
+  req.isAuthenticated() ? next() : res.sendStatus(401);
 }
 
-module.exports = isLoggedIn
+module.exports = isLoggedIn;

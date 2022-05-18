@@ -68,9 +68,7 @@ passport.serializeUser(function (newUser, done) {
 });
 
 passport.deserializeUser(function (id, done) {
-  User.findOne({
-    where: { id: id },
-  })
+  User.findByPk(id)
     .then((user) => done(null, user))
     .catch((error) => done(error, null));
 });
