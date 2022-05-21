@@ -2,18 +2,14 @@ const passport = require("passport");
 var GoogleStrategy = require("passport-google-oauth2").Strategy;
 var LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt");
-const GOOGLE_CLIENT_ID =
-  "727125290277-e2nt4uu1lbnmvfea0salpk5rrekcjj9t.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET = "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";
-
 const db = require("../db/index");
 const User = db.user;
 
 passport.use(
   new GoogleStrategy(
     {
-      clientID: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "http://localhost:3000/auth/google/callback",
       passReqToCallback: true,
     },

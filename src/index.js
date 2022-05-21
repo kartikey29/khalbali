@@ -4,6 +4,7 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 // After you declare "app"
 
+require("dotenv").config();
 const usersRouter = require("./routers/users");
 const postsRouter = require("./routers/posts");
 const subredditsRouter = require("./routers/subreddits");
