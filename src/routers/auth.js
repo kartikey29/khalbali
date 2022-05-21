@@ -13,21 +13,13 @@ router.get(
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failWithError: true }),
-  function (req, res, next) {
-    return res.json({ message: "Success", user: req.user });
-  },
-  function (err, req, res, next) {
-    return res.json({ message: "Wrong username or password" });
-  }
+  passport.authenticate("google", {
+    successRedirect: "/users",
+    failureRedirect: "/auth/failure",
+  })
 );
 
 router.get("/failure", function (req, res) {
   res.send("unauthirized");
 });
 module.exports = router;
-
-// {
-//   successRedirect: '/users',
-//   failureRedirect: '/auth/failure',
-// }
