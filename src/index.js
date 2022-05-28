@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+const SequelizeStore = require("connect-session-sequelize")(session.Store);
+const db = require("./db/index");
 // After you declare "app"
 
 require("dotenv").config();
@@ -15,16 +17,24 @@ const passport = require("passport");
 const auth = require("./routers/auth");
 const port = process.env.PORT || 5000;
 
+var sessionStore = new SequelizeStore({
+  db: db.sequelize,
+  checkExpirationInterval: 15 * 60 * 1000,
+  expiration: 7 * 24 * 60 * 60 * 1000,
+});
+
 const app = express();
 app.use(
   session({
     secret: "keyboard cat",
-    resave: true,
+    resave: false,
     saveUninitialized: true,
     cookie: { secure: false },
+    store: sessionStore,
   })
 );
 
+sessionStore.sync();
 app.use(
   cors({
     origin: "http://localhost:3000", // allow to server to accept request from different origin

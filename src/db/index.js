@@ -25,7 +25,6 @@ sequelize
 
 const db = {};
 
-db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.user = require("../models/users.js")(sequelize, DataTypes);
@@ -57,5 +56,5 @@ db.user.hasMany(db.commentvote);
 db.sequelize.sync({ force: false }).then(() => {
   console.log("yes re-sync done!");
 });
-
+console.log(db);
 module.exports = db;

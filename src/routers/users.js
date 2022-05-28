@@ -12,8 +12,12 @@ const hashpassword = require("../helperFunctions/hashPassword");
 const router = express.Router();
 const User = db.user;
 
-//get data of all users
+router.get("/getUserData", isAuthenticated, (req, res) => {
+  delete req.user.dataValues.password;
+  res.send(req.user);
+});
 
+//get data of all users
 router.get("/", isAuthenticated, async (req, res) => {
   try {
     const rows = await User.findAll();
@@ -36,7 +40,7 @@ router.get("/", isAuthenticated, async (req, res) => {
 
 //get user by id
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", isAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
 

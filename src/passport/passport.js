@@ -53,6 +53,7 @@ passport.use(
             return done(null, false, { message: "Incorrect password." });
           }
           delete user.dataValues.password;
+          console.log(user);
           return done(null, user);
         })
         .catch((err) => done(err));
