@@ -1,4 +1,5 @@
-const dbConfig = require("./dbConfig.js");
+const dbConfig =
+  require("./dbConfig.js")[process.env.NODE_ENV || "development"];
 
 const { Sequelize, DataTypes } = require("sequelize");
 
@@ -12,6 +13,7 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     acquire: dbConfig.pool.acquire,
     idle: dbConfig.pool.idle,
   },
+  dialectOptions: dbConfig.dialectOptions,
 });
 
 sequelize
