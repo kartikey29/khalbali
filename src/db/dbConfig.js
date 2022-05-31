@@ -15,19 +15,13 @@ module.exports = {
     },
   },
   production: {
-    HOST: "34.131.148.215",
-    USER: process.env.USER,
-    PASSWORD: "idrdb@2006",
+    HOST: `/cloudsql/${process.env.DB_INSTANCE}`,
+    DB: process.env.DB_NAME,
+    USER: process.env.DB_USER,
+    PASSWORD: process.env.DB_PASS,
     dialect: "mysql",
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    },
     dialectOptions: {
-      socketPath:
-        "/cloudsql/esoteric-virtue-351813:asia-south2:khalbali-database",
+      socketPath: `/cloudsql/${DB_INSTANCE}`,
     },
   },
 };

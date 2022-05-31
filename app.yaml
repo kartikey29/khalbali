@@ -11,3 +11,7 @@ env_variables:
   GOOGLE_CLIENT_SECRET: "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"
   REDIRECT_URI: "https://developers.google.com/oauthplayground"
   REFRESH_TOKEN: "1//049Vi28HZCVDhCgYIARAAGAQSNwF-L9IrnkyuxDNUF1rL7Q4rAkBpbPF9Ze17MdqLcm_H5NfE9I29hd2pczCZz80aTkYQgFaceLg"
+  DB_USER: "root"
+  DB_NAME: "khabali"
+  DB_PASS: "idrdb@2006"
+  DB_INSTANCE: "esoteric-virtue-351813:asia-south2:khalbali-database"
