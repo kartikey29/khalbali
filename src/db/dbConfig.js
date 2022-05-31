@@ -21,7 +21,7 @@ module.exports = {
     PASSWORD: process.env.DB_PASS,
     dialect: "mysql",
     dialectOptions: {
-      socketPath: `/cloudsql/${DB_INSTANCE}`,
+      socketPath: `/cloudsql/${process.env.DB_INSTANCE}`,
     },
   },
 };
