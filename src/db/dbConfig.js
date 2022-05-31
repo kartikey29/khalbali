@@ -16,7 +16,7 @@ module.exports = {
   },
   production: {
     HOST: "34.131.148.215",
-    DB: process.env.DB,
+    DB: "khabali-database",
     USER: process.env.USER,
     PASSWORD: "idrdb@2006",
     dialect: "mysql",
