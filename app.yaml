@@ -1,5 +1,13 @@
-runtime: nodejs
-env: flex
+runtime: nodejs10
 
 beta_settings:
   cloud_sql_instances: /cloudsql/esoteric-virtue-351813:asia-south2:khalbali-database
+
+env_variables:
+USEREMAIL: "khalbali.wiki@gmail.com"
+SERVICE: "gmail"
+REACT_APP_BACKEND_URL: "http://localhost:5000/"
+GOOGLE_CLIENT_ID: "270380053027-6hvcmth0te55omr3b9cc8eb76t7njcuo.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET: "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"
+REDIRECT_URI: "https://developers.google.com/oauthplayground"
+REFRESH_TOKEN: "1//049Vi28HZCVDhCgYIARAAGAQSNwF-L9IrnkyuxDNUF1rL7Q4rAkBpbPF9Ze17MdqLcm_H5NfE9I29hd2pczCZz80aTkYQgFaceLg"
