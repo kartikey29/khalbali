@@ -28,7 +28,7 @@ const sendEmail = async (email, subject, link, token) => {
       from: process.env.USER,
       to: email,
       subject: subject,
-      text: `http://localhost:3000/resetpassword/${token}`,
+      text: `${REACT_APP_FRONTEND_URL}/resetpassword/${token}`,
     });
 
     return true;

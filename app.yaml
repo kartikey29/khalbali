@@ -1,17 +1,19 @@
 runtime: nodejs16
 
 beta_settings:
-  cloud_sql_instances: /cloudsql/esoteric-virtue-351813:asia-south2:khalbali-database
+  cloud_sql_instances: "esoteric-virtue-351813:us-central1:khalbali"
 
 env_variables:
   USEREMAIL: "khalbali.wiki@gmail.com"
   SERVICE: "gmail"
-  REACT_APP_BACKEND_URL: "http://localhost:5000/"
+  REACT_APP_BACKEND_URL: "http://esoteric-virtue-351813.el.r.appspot.com/"
+  REACT_APP_FRONTEND_URL: "http://esoteric-virtue-351813.el.r.appspot.com/"
   GOOGLE_CLIENT_ID: "270380053027-6hvcmth0te55omr3b9cc8eb76t7njcuo.apps.googleusercontent.com"
   GOOGLE_CLIENT_SECRET: "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"
   REDIRECT_URI: "https://developers.google.com/oauthplayground"
   REFRESH_TOKEN: "1//049Vi28HZCVDhCgYIARAAGAQSNwF-L9IrnkyuxDNUF1rL7Q4rAkBpbPF9Ze17MdqLcm_H5NfE9I29hd2pczCZz80aTkYQgFaceLg"
   DB_USER: "root"
-  DB_NAME: "khabali"
-  DB_PASS: "idrdb@2006"
-  DB_INSTANCE: "esoteric-virtue-351813:asia-south2:khalbali-database"
+  DB_NAME: "khalbali-database"
+  DB_PASS: "kartikey"
+  DB_INSTANCE: "esoteric-virtue-351813:us-central1:khalbali"
+  NODE_ENV: "production"

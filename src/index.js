@@ -5,7 +5,6 @@ const cookieParser = require("cookie-parser");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const db = require("./db/index");
 // After you declare "app"
-
 require("dotenv").config();
 const usersRouter = require("./routers/users");
 const postsRouter = require("./routers/posts");
@@ -34,16 +33,22 @@ app.use(
   })
 );
 
+console.log(process.env.REACT_APP_FRONTEND_URL);
+
 sessionStore.sync();
+
 app.use(
   cors({
-    origin: "http://localhost:3000", // allow to server to accept request from different origin
+    origin: "*", // allow to server to accept request from different origin
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // allow session cookie from browser to pass through
+    allowedHeaders: "*",
   })
 );
+
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 app.use(passport.initialize());
 app.use(passport.session());
