@@ -1,11 +1,12 @@
 const express = require("express");
+require("dotenv").config();
 const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
-const SequelizeStore = require("connect-session-sequelize")(session.Store);
+
 const db = require("./db/index");
 // After you declare "app"
-require("dotenv").config();
+
 const usersRouter = require("./routers/users");
 const postsRouter = require("./routers/posts");
 const subredditsRouter = require("./routers/subreddits");
@@ -16,42 +17,48 @@ const passport = require("passport");
 const auth = require("./routers/auth");
 const port = process.env.PORT || 5000;
 
-var sessionStore = new SequelizeStore({
-  db: db.sequelize,
-  checkExpirationInterval: 15 * 60 * 1000,
-  expiration: 7 * 24 * 60 * 60 * 1000,
-});
+// var sessionStore = new SequelizeStore({
+//   db: db.sequelize,
+//   checkExpirationInterval: 15 * 60 * 1000,
+//   expiration: 7 * 24 * 60 * 60 * 1000,
+// });
 
 const app = express();
-app.use(
-  session({
-    secret: "keyboard cat",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
-    store: sessionStore,
-  })
-);
+// app.use(
+//   session({
+//     secret: "keyboard cat",
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie: { secure: "auto" },
+//   })
+// );
 
-console.log(process.env.REACT_APP_FRONTEND_URL);
-
-sessionStore.sync();
-
-app.use(
-  cors({
-    origin: "*", // allow to server to accept request from different origin
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true, // allow session cookie from browser to pass through
-    allowedHeaders: "*",
-  })
-);
-
+// sessionStore.sync();
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+//http://khalbali.herokuapp.com
+
+// app.use(
+//   cors({
+//     origin: "http://khalbali.herokuapp.com", // allow to server to accept request from different origin
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//     credentials: true, // allow session cookie from browser to pass throug
+//   })
+// );
+app.use(function (req, res, next) {
+  res.header("Content-Type", "application/json;charset=UTF-8");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
 
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
+app.use(express.urlencoded({ extended: false }));
 
 app.use("/users", usersRouter);
 app.use("/posts", postsRouter);

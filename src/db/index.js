@@ -58,5 +58,4 @@ db.user.hasMany(db.commentvote);
 db.sequelize.sync({ force: false }).then(() => {
   console.log("yes re-sync done!");
 });
-console.log(db);
 module.exports = db;

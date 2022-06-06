@@ -1,7 +1,7 @@
 const express = require("express");
-const isAuthenticated = require("../middleware/isAuthenticated");
 const db = require("../db/index");
 const checkModerator = require("../helperFunctions/checkModerator");
+const passport = require("passport");
 const { Sequelize } = require("sequelize");
 const Comment = db.comment;
 const CommentVote = db.commentvote;
@@ -75,107 +75,119 @@ router.get("/:post_id", async (req, res) => {
 
 //comment on a post
 
-router.post("/", isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { body, postId, commentId } = req.body;
-    if (!body) {
-      throw new Error("Must specify comment body");
+router.post(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { body, postId, commentId } = req.body;
+      if (!body) {
+        throw new Error("Must specify comment body");
+      }
+      if (!postId) {
+        throw new Error("Must specify post to comment on");
+      }
+
+      const newComment = await Comment.create({
+        body: body,
+        userId,
+        postId: postId,
+        commentId: commentId,
+      });
+      console.log(newComment);
+      newComment.save();
+
+      // Automatically upvote own comment
+
+      const newCommentVote = await CommentVote.create({
+        userId,
+        commentId: newComment.id,
+        vote_value: 1,
+      });
+      console.log(newCommentVote);
+      newCommentVote.save();
+
+      res.status(201).send(newComment);
+    } catch (e) {
+      res.status(400).send({ error: e.message });
     }
-    if (!postId) {
-      throw new Error("Must specify post to comment on");
-    }
-
-    const newComment = await Comment.create({
-      body: body,
-      userId,
-      postId: postId,
-      commentId: commentId,
-    });
-    console.log(newComment);
-    newComment.save();
-
-    // Automatically upvote own comment
-
-    const newCommentVote = await CommentVote.create({
-      userId,
-      commentId: newComment.id,
-      vote_value: 1,
-    });
-    console.log(newCommentVote);
-    newCommentVote.save();
-
-    res.status(201).send(newComment);
-  } catch (e) {
-    res.status(400).send({ error: e.message });
   }
-});
+);
 
 //edit a comment
 
-router.put("/:id", isAuthenticated, async (req, res) => {
-  try {
-    const { id } = req.params;
+router.put(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const comment = await Comment.findOne({
-      where: { id },
-      include: [{ model: Post, include: [Subreddit] }],
-    });
+      const comment = await Comment.findOne({
+        where: { id },
+        include: [{ model: Post, include: [Subreddit] }],
+      });
 
-    const subredditName = comment.post.subreddit.name;
+      const subredditName = comment.post.subreddit.name;
 
-    if (!comment) {
-      return res
-        .status(404)
-        .send({ error: "Could not find comment with that id" });
+      if (!comment) {
+        return res
+          .status(404)
+          .send({ error: "Could not find comment with that id" });
+      }
+
+      if (
+        comment.userId !== req.body.userId &&
+        (await checkModerator(comment.userId, subredditName)) === false
+      ) {
+        return res
+          .status(403)
+          .send({ error: "You must the comment author to edit it" });
+      }
+
+      const updatedComment = await comment.update(req.body);
+      return res.send(updatedComment);
+    } catch (e) {
+      res.status(400).send({ error: e.message });
     }
-
-    if (
-      comment.userId !== req.body.userId &&
-      (await checkModerator(comment.userId, subredditName)) === false
-    ) {
-      return res
-        .status(403)
-        .send({ error: "You must the comment author to edit it" });
-    }
-
-    const updatedComment = await comment.update(req.body);
-    return res.send(updatedComment);
-  } catch (e) {
-    res.status(400).send({ error: e.message });
   }
-});
+);
 
 //delete a comment
 
-router.delete("/:id", isAuthenticated, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-    const commentData = await Comment.findByPk(id, {
-      include: [{ model: Post, include: [Subreddit] }],
-    });
-    console.log(commentData);
-    if (!commentData) {
-      return res
-        .status(404)
-        .send({ error: "Could not find comment with that id" });
-    }
+router.delete(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      const commentData = await Comment.findByPk(id, {
+        include: [{ model: Post, include: [Subreddit] }],
+      });
+      console.log(commentData);
+      if (!commentData) {
+        return res
+          .status(404)
+          .send({ error: "Could not find comment with that id" });
+      }
 
-    const subredditName = commentData.post.subreddit.name;
-    if (
-      commentData.userId !== userId &&
-      (await checkModerator(commentData.userId, subredditName)) === false
-    ) {
-      return res
-        .status(403)
-        .send({ error: "You must be the comment author to delete it" });
+      const subredditName = commentData.post.subreddit.name;
+      if (
+        commentData.userId !== userId &&
+        (await checkModerator(commentData.userId, subredditName)) === false
+      ) {
+        return res
+          .status(403)
+          .send({ error: "You must be the comment author to delete it" });
+      }
+      await Comment.destroy({ where: { id } });
+      return res.status(200).send({ message: "deleted" });
+    } catch (e) {
+      res.status(400).send({ error: e.message });
     }
-    await Comment.destroy({ where: { id } });
-    return res.status(200).send({ message: "deleted" });
-  } catch (e) {
-    res.status(400).send({ error: e.message });
   }
-});
+);
 
 module.exports = router;

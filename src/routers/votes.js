@@ -1,5 +1,5 @@
 const express = require("express");
-const isAuthenticated = require("../middleware/isAuthenticated");
+const passport = require("passport");
 
 const router = express.Router();
 const db = require("../db/index");
@@ -75,80 +75,84 @@ router.get("/:voteType", async (req, res) => {
 
 //make a vote
 
-router.post("/:voteType", isAuthenticated, async (req, res) => {
-  try {
-    const { voteType, error: voteTypeError } = checkVoteType(
-      req.params.voteType
-    );
-    if (voteTypeError) {
-      return res.status(400).send({ error: voteTypeError });
-    }
+router.post(
+  "/:voteType",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { voteType, error: voteTypeError } = checkVoteType(
+        req.params.voteType
+      );
+      if (voteTypeError) {
+        return res.status(400).send({ error: voteTypeError });
+      }
 
-    const user_id = req.user.id;
-    const { item_id, vote_value } = req.body;
+      const user_id = req.user.id;
+      const { item_id, vote_value } = req.body;
 
-    const { status, error } = await checkVoteValid(
-      item_id,
-      vote_value,
-      voteType
-    );
-    if (error) {
-      return res.status(status).send({ error });
-    }
-    if (voteType == "post") {
-      const findPost = await Vote.findOne({
-        where: [{ postId: item_id }, { userId: user_id }],
-      });
-      if (!findPost || findPost.length == 0) {
-        const selectPostVotes = await Vote.create({
-          vote_value: vote_value,
-          postId: item_id,
-          userId: user_id,
+      const { status, error } = await checkVoteValid(
+        item_id,
+        vote_value,
+        voteType
+      );
+      if (error) {
+        return res.status(status).send({ error });
+      }
+      if (voteType == "post") {
+        const findPost = await Vote.findOne({
+          where: [{ postId: item_id }, { userId: user_id }],
         });
-        if (selectPostVotes.length == 0) {
-          return res.status(500).send({ message: "No votes available" });
+        if (!findPost || findPost.length == 0) {
+          const selectPostVotes = await Vote.create({
+            vote_value: vote_value,
+            postId: item_id,
+            userId: user_id,
+          });
+          if (selectPostVotes.length == 0) {
+            return res.status(500).send({ message: "No votes available" });
+          } else {
+            return res.send(selectPostVotes);
+          }
         } else {
-          return res.send(selectPostVotes);
+          const updatePostVote = await Vote.update(
+            { vote_value: vote_value },
+            { where: { id: findPost.id } }
+          );
+          if (updatePostVote) {
+            return res.send({ message: "vote updated" });
+          }
         }
-      } else {
-        const updatePostVote = await Vote.update(
-          { vote_value: vote_value },
-          { where: { id: findPost.id } }
-        );
-        if (updatePostVote) {
+      }
+
+      if (voteType == "comment") {
+        const findComment = await commentVote.findOne({
+          where: [{ commentId: item_id }, { userId: user_id }],
+        });
+        console.log(findComment.id);
+        if (!findComment || findComment.length == 0) {
+          const selectCommentVotes = await commentVote.create({
+            vote_value: vote_value,
+            commentId: item_id,
+            userId: user_id,
+          });
+
+          if (selectCommentVotes.length == 0) {
+            return res.status(500).send({ message: "No votes available" });
+          } else {
+            return res.send(selectCommentVotes);
+          }
+        } else {
+          const updateCommentVote = await commentVote.update(
+            { vote_value: vote_value },
+            { where: { id: findComment.id } }
+          );
           return res.send({ message: "vote updated" });
         }
       }
+    } catch (e) {
+      res.status(500).send({ error: e.message });
     }
-
-    if (voteType == "comment") {
-      const findComment = await commentVote.findOne({
-        where: [{ commentId: item_id }, { userId: user_id }],
-      });
-      console.log(findComment.id);
-      if (!findComment || findComment.length == 0) {
-        const selectCommentVotes = await commentVote.create({
-          vote_value: vote_value,
-          commentId: item_id,
-          userId: user_id,
-        });
-
-        if (selectCommentVotes.length == 0) {
-          return res.status(500).send({ message: "No votes available" });
-        } else {
-          return res.send(selectCommentVotes);
-        }
-      } else {
-        const updateCommentVote = await commentVote.update(
-          { vote_value: vote_value },
-          { where: { id: findComment.id } }
-        );
-        return res.send({ message: "vote updated" });
-      }
-    }
-  } catch (e) {
-    res.status(500).send({ error: e.message });
   }
-});
+);
 
 module.exports = router;

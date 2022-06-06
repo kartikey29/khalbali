@@ -1,6 +1,9 @@
 const passport = require("passport");
+require("dotenv").config();
 var GoogleStrategy = require("passport-google-oauth2").Strategy;
 var LocalStrategy = require("passport-local").Strategy;
+const JwtStrategy = require("passport-jwt").Strategy;
+const ExtractJWT = require("passport-jwt").ExtractJwt;
 const bcrypt = require("bcrypt");
 const db = require("../db/index");
 const User = db.user;
@@ -35,7 +38,7 @@ passport.use(
 );
 
 passport.use(
-  "local-signup",
+  "local-login",
   new LocalStrategy(
     {
       username: "username",
@@ -61,12 +64,30 @@ passport.use(
   )
 );
 
-passport.serializeUser(function (newUser, done) {
-  done(null, newUser.id);
-});
+const opts = {
+  jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET,
+};
 
-passport.deserializeUser(function (id, done) {
-  User.findByPk(id)
-    .then((user) => done(null, user))
-    .catch((error) => done(error, null));
-});
+passport.use(
+  "jwt",
+  new JwtStrategy(opts, (jwt_payload, done) => {
+    try {
+      User.findOne({
+        where: {
+          id: jwt_payload.id,
+        },
+      }).then((user) => {
+        if (user) {
+          console.log("user found in db in passport");
+          done(null, user);
+        } else {
+          console.log("user not found in db");
+          done(null, false);
+        }
+      });
+    } catch (err) {
+      done(err);
+    }
+  })
+);
