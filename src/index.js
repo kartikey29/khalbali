@@ -17,35 +17,20 @@ const passport = require("passport");
 const auth = require("./routers/auth");
 const port = process.env.PORT || 5000;
 
-// var sessionStore = new SequelizeStore({
-//   db: db.sequelize,
-//   checkExpirationInterval: 15 * 60 * 1000,
-//   expiration: 7 * 24 * 60 * 60 * 1000,
-// });
-
 const app = express();
-// app.use(
-//   session({
-//     secret: "keyboard cat",
-//     resave: false,
-//     saveUninitialized: true,
-//     cookie: { secure: "auto" },
-//   })
-// );
 
-// sessionStore.sync();
 app.use(cookieParser());
 app.use(express.json());
 
 //http://khalbali.herokuapp.com
 
-// app.use(
-//   cors({
-//     origin: "http://khalbali.herokuapp.com", // allow to server to accept request from different origin
-//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-//     credentials: true, // allow session cookie from browser to pass throug
-//   })
-// );
+app.use(
+  cors({
+    origin: "http://khalbali.herokuapp.com", // allow to server to accept request from different origin
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true, // allow session cookie from browser to pass through
+  })
+);
 app.use(function (req, res, next) {
   res.header("Content-Type", "application/json;charset=UTF-8");
   res.header("Access-Control-Allow-Credentials", true);
@@ -57,7 +42,7 @@ app.use(function (req, res, next) {
 });
 
 app.use(passport.initialize());
-// app.use(passport.session());
+s;
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/users", usersRouter);
