@@ -104,7 +104,7 @@ router.post("/login", (req, res, next) => {
             delete user.dataValues.password;
             res.status(200).send({
               auth: true,
-              token,
+              token: `Bearer ${token}`,
               user,
               message: "user found & logged in",
             });
