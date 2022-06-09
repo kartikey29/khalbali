@@ -28,7 +28,6 @@ router.get(
   async (req, res) => {
     try {
       const rows = await User.findAll();
-
       const data = rows.map((user) => {
         const values = {
           id: user.id,
