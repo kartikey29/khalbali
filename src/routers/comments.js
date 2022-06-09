@@ -138,7 +138,7 @@ router.put(
       }
 
       if (
-        comment.userId !== req.body.userId &&
+        comment.userId !== req.user.id &&
         (await checkModerator(comment.userId, subredditName)) === false
       ) {
         return res

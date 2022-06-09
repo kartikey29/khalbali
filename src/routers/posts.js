@@ -154,7 +154,7 @@ router.put(
           .send({ error: "Could not find post with that id" });
       }
       if (
-        post.userId !== req.body.userId &&
+        post.userId !== req.user.id &&
         (await checkModerator(post.userId, post.subreddit.name)) === false
       ) {
         return res
@@ -190,12 +190,12 @@ router.delete(
           .send({ error: "Could not find post with that id" });
       }
       if (
-        post.userId !== req.body.userId &&
+        post.userId !== req.user.id &&
         (await checkModerator(post.userId, post.subreddit.name)) === false
       ) {
         return res
           .status(403)
-          .send({ error: "You must the comment author to edit it" });
+          .send({ error: "You must the comment author to delete it" });
       }
 
       await Post.destroy({ where: { id: id } });
