@@ -18,43 +18,35 @@ router.get("/", async (req, res) => {
     let whereClause = {};
 
     if (subreddit) {
-      whereClause = { where: { name: subreddit } };
-      console.log(subreddit);
+      whereClause = { name: subreddit };
     }
 
-    const FoundData = await Subreddit.findAll(whereClause);
-    if (!FoundData) {
-      return res.status(404).send("no subreddit avaible with this name");
-    } else {
-      const FoundPost = await Post.findAll({
-        where: { subredditId: FoundData[0].id },
-        attributes: {
-          include: [
-            [
-              Sequelize.fn("COUNT", Sequelize.col("comments.id")),
-              "PostComments",
-            ],
-            [
-              Sequelize.fn("SUM", Sequelize.col("votes.vote_value")),
-              "postVotes",
-            ],
-          ],
-        },
+    const FoundPost = await Post.findAll({
+      where: {},
+      attributes: {
         include: [
-          { model: User, attributes: ["username"] },
-          { model: Subreddit, attributes: ["name"] },
-          { model: comments, attributes: [] },
-          { model: PostVote, attributes: [] },
+          [Sequelize.fn("COUNT", Sequelize.col("comments.id")), "PostComments"],
+          [Sequelize.fn("SUM", Sequelize.col("votes.vote_value")), "postVotes"],
         ],
-        group: ["comments.postId"],
-        group: ["votes.postId"],
-      });
+      },
+      include: [
+        { model: User, attributes: ["username"] },
+        {
+          model: Subreddit,
+          attributes: ["name"],
+          where: whereClause,
+        },
+        { model: comments, attributes: [] },
+        { model: PostVote, attributes: [] },
+      ],
+      group: ["comments.postId"],
+      group: ["votes.postId"],
+    });
 
-      if (FoundPost.length == 0) {
-        return res.status(404).send("no post avaible with this name");
-      } else {
-        return res.status(200).send(FoundPost);
-      }
+    if (FoundPost.length == 0) {
+      return res.status(404).send("no post avaible with this name");
+    } else {
+      return res.status(200).send(FoundPost);
     }
   } catch (e) {
     res.status(500).send({ error: e.message });

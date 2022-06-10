@@ -31,7 +31,7 @@ router.get(
         });
         delete user.dataValues.password;
         const query = new URLSearchParams({ token: token });
-        res.redirect("http://localhost:3000/" + query);
+        res.redirect(process.env.REACT_APP_FRONTEND_URL + query);
       });
     });
   }
