@@ -24,16 +24,9 @@ app.use(express.json());
 
 //http://khalbali.herokuapp.com
 
-const whitelist = ["http://khalbali.herokuapp.com", "http://localhost:3000"];
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (whitelist.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    }, // allow to server to accept request from different origin
+    origin: "http://khalbali.herokuapp.com", // allow to server to accept request from different origin
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // allow session cookie from browser to pass through
   })
