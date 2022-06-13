@@ -19,7 +19,7 @@ router.get(
   async (req, res) => {
     try {
       const { subreddit, page, title } = req.query;
-      const limit = 10;
+      const limit = 3;
       let whereClause = {};
 
       //if of specific subreddit
@@ -83,7 +83,9 @@ router.get(
           }
         }
       }
-      return res.status(200).send({ FoundPost, count, pages });
+      return res
+        .status(200)
+        .send({ FoundPost, totalPostFound: count, totalPages: pages });
     } catch (e) {
       res.status(500).send({ error: e.message });
     }

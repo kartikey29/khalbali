@@ -24,16 +24,20 @@ app.use(express.json());
 
 //http://khalbali.herokuapp.com
 
-var whitelist = ["http://localhost:3000", "http://khalbali.herokuapp.com"];
+// var whitelist = ["http://localhost:3000", "http://khalbali.herokuapp.com"];
+
+// var corsOptions = {
+//   origin: function (origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+// };
 
 var corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: "http://localhost:3000",
 };
 
 app.use(cors(corsOptions));
