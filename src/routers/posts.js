@@ -19,7 +19,7 @@ router.get(
   async (req, res) => {
     try {
       const { subreddit, page, title } = req.query;
-      const limit = 3;
+      const limit = 10;
       let whereClause = {};
 
       //if of specific subreddit

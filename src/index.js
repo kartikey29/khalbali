@@ -22,25 +22,23 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-//http://khalbali.herokuapp.com
-
-// var whitelist = ["http://localhost:3000", "http://khalbali.herokuapp.com"];
-
-// var corsOptions = {
-//   origin: function (origin, callback) {
-//     if (whitelist.indexOf(origin) !== -1) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-// };
+var whitelist = ["http://localhost:3000", "http://khalbali.herokuapp.com"];
 
 var corsOptions = {
-  origin: "http://localhost:3000",
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  optionsSuccessStatus: 200,
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(passport.initialize());
 
