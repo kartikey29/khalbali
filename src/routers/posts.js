@@ -9,49 +9,86 @@ const router = express.Router();
 const User = db.user;
 const Sequelize = require("sequelize");
 const checkModerator = require("../helperFunctions/checkModerator");
-
+const doPagination = require("../helperFunctions/doPagination");
+const Op = Sequelize.Op;
 //get all post or of a specific subreddit
 
-router.get("/", async (req, res) => {
-  try {
-    const { subreddit } = req.query;
-    let whereClause = {};
+router.get(
+  "/",
+  passport.authenticate(["jwt", "anonymous"], { session: false }),
+  async (req, res) => {
+    try {
+      const { subreddit, page, title } = req.query;
+      const limit = 10;
+      let whereClause = {};
 
-    if (subreddit) {
-      whereClause = { name: subreddit };
-    }
+      //if of specific subreddit
+      if (subreddit) {
+        whereClause = { name: subreddit };
+      }
 
-    const FoundPost = await Post.findAll({
-      where: {},
-      attributes: {
-        include: [
-          [Sequelize.fn("COUNT", Sequelize.col("comments.id")), "PostComments"],
-          [Sequelize.fn("SUM", Sequelize.col("votes.vote_value")), "postVotes"],
-        ],
-      },
-      include: [
-        { model: User, attributes: ["username"] },
-        {
-          model: Subreddit,
-          attributes: ["name"],
-          where: whereClause,
+      //if to search specific title
+      const search = title ? { title: { [Op.like]: `%${title}%` } } : null;
+
+      //pagination
+      const { pages, offset, count } = await doPagination(
+        page,
+        limit,
+        whereClause,
+        search
+      );
+
+      let FoundPost = await Post.findAll({
+        where: search,
+        subQuery: false,
+        attributes: {
+          include: [
+            [
+              Sequelize.fn("COUNT", Sequelize.col("comments.id")),
+              "PostComments",
+            ],
+            [
+              Sequelize.fn("SUM", Sequelize.col("votes.vote_value")),
+              "postVotes",
+            ],
+          ],
         },
-        { model: comments, attributes: [] },
-        { model: PostVote, attributes: [] },
-      ],
-      group: ["comments.postId"],
-      group: ["votes.postId"],
-    });
+        include: [
+          { model: User, attributes: ["username"] },
+          {
+            model: Subreddit,
+            attributes: ["name"],
+            where: whereClause,
+          },
+          { model: comments, attributes: [] },
+          { model: PostVote, attributes: [] },
+        ],
+        group: ["comments.postId"],
+        group: ["votes.postId"],
+        limit,
+        offset,
+      });
 
-    if (FoundPost.length == 0) {
-      return res.status(404).send("no post avaible with this name");
-    } else {
-      return res.status(200).send(FoundPost);
+      //give vote of user when logged in
+      if (req.user) {
+        for (const post of FoundPost) {
+          const Vote = await PostVote.findOne({
+            where: {
+              postId: post.dataValues.id,
+              userId: req.user.id,
+            },
+          });
+          if (Vote) {
+            post.dataValues.hasVoted = Vote.dataValues.vote_value;
+          }
+        }
+      }
+      return res.status(200).send({ FoundPost, count, pages });
+    } catch (e) {
+      res.status(500).send({ error: e.message });
     }
-  } catch (e) {
-    res.status(500).send({ error: e.message });
   }
-});
+);
 
 //get post data using id
 

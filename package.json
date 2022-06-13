@@ -8,7 +8,7 @@
     "npm": "7.24.0"
   },
   "scripts": {
-    "start": "nodemon src/index.js"
+    "start": "node src/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -28,6 +28,7 @@
     "mysql2": "^2.3.3",
     "nodemailer": "^6.7.5",
     "passport": "^0.5.2",
+    "passport-anonymous": "^1.0.1",
     "passport-google-oauth2": "^0.2.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",

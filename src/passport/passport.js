@@ -4,9 +4,12 @@ var GoogleStrategy = require("passport-google-oauth2").Strategy;
 var LocalStrategy = require("passport-local").Strategy;
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJWT = require("passport-jwt").ExtractJwt;
+const AnonymousStrategy = require("passport-anonymous").Strategy;
 const bcrypt = require("bcrypt");
 const db = require("../db/index");
 const User = db.user;
+
+passport.use(new AnonymousStrategy());
 
 passport.use(
   new GoogleStrategy(

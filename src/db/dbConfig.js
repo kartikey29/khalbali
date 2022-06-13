@@ -4,7 +4,7 @@ module.exports = {
   development: {
     HOST: process.env.HOST,
     DB: process.env.DB,
-    USER: process.env.USER,
+    USER: process.env.mySqlUser,
     PASSWORD: process.env.PASSWORD,
     dialect: "mysql",
     pool: {
