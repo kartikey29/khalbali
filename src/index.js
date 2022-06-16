@@ -22,9 +22,9 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-var whitelist = ["http://localhost:3000", "http://khalbali.herokuapp.com"];
+const whitelist = ["http://localhost:3000", "http://khalbali.herokuapp.com"];
 
-var corsOptions = {
+const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
