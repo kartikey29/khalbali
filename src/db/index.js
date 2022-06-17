@@ -55,7 +55,7 @@ db.moderator.belongsTo(db.user);
 db.comment.hasMany(db.commentvote);
 db.user.hasMany(db.commentvote);
 
-db.sequelize.sync({ force: false }).then(() => {
+db.sequelize.sync({ force: false, alter: true }).then(() => {
   console.log("yes re-sync done!");
 });
 module.exports = db;
