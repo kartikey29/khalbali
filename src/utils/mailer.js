@@ -4,7 +4,6 @@ const path = require("path");
 require("dotenv").config();
 const ejs = require("ejs");
 const juice = require("juice");
-const { htmlToText } = require("html-to-text");
 
 const sendEmail = async (email, subject, link, token) => {
   try {
@@ -30,6 +29,8 @@ const sendEmail = async (email, subject, link, token) => {
 
     let mailOptions;
 
+    //send ejs template in mail
+
     ejs.renderFile(
       __dirname + "/mail.ejs",
       {
@@ -41,6 +42,7 @@ const sendEmail = async (email, subject, link, token) => {
         } else {
           const html = data;
           const juiced = juice(html);
+
           mailOptions = {
             from: `Khalbali <${process.env.USEREMAIL}>`,
             to: email,

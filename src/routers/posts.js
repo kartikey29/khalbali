@@ -81,6 +81,8 @@ router.get(
           });
           if (Vote) {
             post.dataValues.hasVoted = Vote.dataValues.vote_value;
+          } else {
+            post.dataValues.hasVoted = 0;
           }
         }
       }
