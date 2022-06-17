@@ -9,6 +9,7 @@ const PostVote = db.vote;
 const Post = db.post;
 const User = db.user;
 const Subreddit = db.subreddit;
+const doPagination = require("../helperFunctions/doPagination");
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ router.get("/", async (req, res) => {
 router.get("/:post_id", async (req, res) => {
   try {
     const { post_id } = req.params;
+    const { page } = req.query;
     const postData = await Post.findOne({
       where: { id: post_id },
       attributes: {
@@ -44,8 +46,25 @@ router.get("/:post_id", async (req, res) => {
       ],
     });
 
+    if (!postData) {
+      return res
+        .status(404)
+        .send({ error: "Could not find post with that id" });
+    }
+
+    //for pagination
+    const whereClause = { postId: post_id };
+    // const limit = 10;
+    // const { pages, offset, count } = await doPagination(
+    //   page,
+    //   limit,
+    //   whereClause,
+    //   (search = null),
+    //   (type = "comments")
+    // );
+    //pagination done
     const commentData = await Comment.findAll({
-      where: { postId: post_id },
+      where: whereClause,
       attributes: {
         include: [
           [
@@ -59,15 +78,17 @@ router.get("/:post_id", async (req, res) => {
         { model: User, attributes: ["username"] },
       ],
       group: ["commentvotes.commentId"],
+      subQuery: false,
+      // limit,
+      // offset,
     });
 
-    if (!postData) {
-      return res
-        .status(404)
-        .send({ error: "Could not find post with that id" });
-    }
-
-    res.send({ postData, commentData });
+    res.send({
+      postData,
+      commentData,
+      // totalCommentFound: count,
+      // totalPages: pages,
+    });
   } catch (e) {
     res.status(500).send({ error: e.message });
   }

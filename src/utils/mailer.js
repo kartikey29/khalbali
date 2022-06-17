@@ -25,7 +25,7 @@ const sendEmail = async (email, subject, link, token) => {
     });
 
     await transporter.sendMail({
-      from: process.env.USER,
+      from: `Khalbali <${process.env.USEREMAIL}>`,
       to: email,
       subject: subject,
       text: `${process.env.REACT_APP_FRONTEND_URL}resetpassword/${token}`,

@@ -35,7 +35,8 @@ router.get(
         page,
         limit,
         whereClause,
-        search
+        search,
+        (type = "posts")
       );
 
       let FoundPost = await Post.findAll({

@@ -27,7 +27,7 @@ router.get(
         },
       }).then((user) => {
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-          expiresIn: 60 * 60,
+          expiresIn: 604800,
         });
         delete user.dataValues.password;
         const query = new URLSearchParams({ token: token });

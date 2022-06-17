@@ -98,7 +98,7 @@ router.post("/login", (req, res, next) => {
             },
           }).then((user) => {
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-              expiresIn: 60 * 60,
+              expiresIn: 604800,
             });
             delete user.dataValues.password;
             res.status(200).send({
