@@ -2,8 +2,7 @@ const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
 const path = require("path");
 require("dotenv").config();
-const ejs = require("ejs");
-const juice = require("juice");
+const hbs = require("nodemailer-express-handlebars");
 
 const sendEmail = async (email, subject, link, token) => {
   try {
@@ -27,31 +26,32 @@ const sendEmail = async (email, subject, link, token) => {
       },
     });
 
+    const handlebarOptions = {
+      viewEngine: {
+        extName: ".handlebars",
+        partialsDir: path.resolve(__dirname, "view"),
+        defaultLayout: false,
+      },
+      viewPath: path.resolve(__dirname, "view"),
+      extName: ".handlebars",
+    };
+
+    transporter.use("compile", hbs(handlebarOptions));
+
     let mailOptions;
 
-    //send ejs template in mail
+    //send mail.handlerbar template in mail
 
-    ejs.renderFile(
-      __dirname + "/mail.ejs",
-      {
+    mailOptions = {
+      from: `Khalbali <${process.env.USEREMAIL}>`,
+      to: email,
+      subject: subject,
+      template: "mail",
+      context: {
         link: `${process.env.REACT_APP_FRONTEND_URL}resetpassword/${token}`,
+        url: process.env.REACT_APP_BACKEND_URL,
       },
-      (err, data) => {
-        if (err) {
-          console.log(err);
-        } else {
-          const html = data;
-          const juiced = juice(html);
-
-          mailOptions = {
-            from: `Khalbali <${process.env.USEREMAIL}>`,
-            to: email,
-            subject: subject,
-            html: juiced,
-          };
-        }
-      }
-    );
+    };
 
     transporter.sendMail(mailOptions);
 
