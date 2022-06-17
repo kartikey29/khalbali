@@ -1,6 +1,10 @@
 const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
+const path = require("path");
 require("dotenv").config();
+const ejs = require("ejs");
+const juice = require("juice");
+const { htmlToText } = require("html-to-text");
 
 const sendEmail = async (email, subject, link, token) => {
   try {
@@ -24,12 +28,30 @@ const sendEmail = async (email, subject, link, token) => {
       },
     });
 
-    await transporter.sendMail({
-      from: `Khalbali <${process.env.USEREMAIL}>`,
-      to: email,
-      subject: subject,
-      text: `${process.env.REACT_APP_FRONTEND_URL}resetpassword/${token}`,
-    });
+    let mailOptions;
+
+    ejs.renderFile(
+      __dirname + "/mail.ejs",
+      {
+        link: `${process.env.REACT_APP_FRONTEND_URL}resetpassword/${token}`,
+      },
+      (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          const html = data;
+          const juiced = juice(html);
+          mailOptions = {
+            from: `Khalbali <${process.env.USEREMAIL}>`,
+            to: email,
+            subject: subject,
+            html: juiced,
+          };
+        }
+      }
+    );
+
+    transporter.sendMail(mailOptions);
 
     return true;
   } catch (error) {

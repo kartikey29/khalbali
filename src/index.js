@@ -3,6 +3,7 @@ require("dotenv").config();
 const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 const db = require("./db/index");
 // After you declare "app"
