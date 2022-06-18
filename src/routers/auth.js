@@ -30,8 +30,7 @@ router.get(
           expiresIn: 604800,
         });
         delete user.dataValues.password;
-        const query = new URLSearchParams({ token: token });
-        res.redirect(process.env.REACT_APP_FRONTEND_URL + query);
+        res.redirect(process.env.REACT_APP_FRONTEND_URL + "token/" + token);
       });
     });
   }
