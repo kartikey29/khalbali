@@ -9,7 +9,7 @@ const PostVote = db.vote;
 const Post = db.post;
 const User = db.user;
 const Subreddit = db.subreddit;
-const doPagination = require("../helperFunctions/doPagination");
+// const doPagination = require("../helperFunctions/doPagination");
 
 const router = express.Router();
 
@@ -26,73 +26,97 @@ router.get("/", async (req, res) => {
 
 //get post data with comment data using postId
 
-router.get("/:post_id", async (req, res) => {
-  try {
-    const { post_id } = req.params;
-    const { page } = req.query;
-    const postData = await Post.findOne({
-      where: { id: post_id },
-      attributes: {
-        include: [
-          [Sequelize.fn("COUNT", Sequelize.col("comments.id")), "PostComments"],
-          [Sequelize.fn("SUM", Sequelize.col("votes.vote_value")), "postVotes"],
-        ],
-      },
-      include: [
-        { model: User, attributes: ["username"] },
-        { model: Subreddit, attributes: ["name"] },
-        { model: Comment, attributes: [] },
-        { model: PostVote, attributes: [] },
-      ],
-    });
-
-    if (!postData) {
-      return res
-        .status(404)
-        .send({ error: "Could not find post with that id" });
-    }
-
-    //for pagination
-    const whereClause = { postId: post_id };
-    // const limit = 10;
-    // const { pages, offset, count } = await doPagination(
-    //   page,
-    //   limit,
-    //   whereClause,
-    //   (search = null),
-    //   (type = "comments")
-    // );
-    //pagination done
-    const commentData = await Comment.findAll({
-      where: whereClause,
-      attributes: {
-        include: [
-          [
-            Sequelize.fn("SUM", Sequelize.col("commentvotes.vote_value")),
-            "commentVotes",
+router.get(
+  "/:post_id",
+  passport.authenticate(["jwt", "anonymous"], { session: false }),
+  async (req, res) => {
+    try {
+      const { post_id } = req.params;
+      const postData = await Post.findOne({
+        where: { id: post_id },
+        attributes: {
+          include: [
+            [
+              Sequelize.fn("COUNT", Sequelize.col("comments.id")),
+              "PostComments",
+            ],
+            [
+              Sequelize.fn("SUM", Sequelize.col("votes.vote_value")),
+              "postVotes",
+            ],
           ],
+        },
+        include: [
+          { model: User, attributes: ["username"] },
+          { model: Subreddit, attributes: ["name"] },
+          { model: Comment, attributes: [] },
+          { model: PostVote, attributes: [] },
         ],
-      },
-      include: [
-        { model: CommentVote, attributes: [] },
-        { model: User, attributes: ["username"] },
-      ],
-      group: ["commentvotes.commentId"],
-      subQuery: false,
-      // limit,
-      // offset,
-    });
+      });
 
-    res.send({
-      postData,
-      commentData,
-      // totalCommentFound: count,
-      // totalPages: pages,
-    });
-  } catch (e) {
-    res.status(500).send({ error: e.message });
+      if (!postData) {
+        return res
+          .status(404)
+          .send({ error: "Could not find post with that id" });
+      }
+
+      if (req.user) {
+        const Vote = await PostVote.findOne({
+          where: {
+            postId: postData.dataValues.id,
+            userId: req.user.id,
+          },
+        });
+        if (Vote) {
+          postData.dataValues.hasVoted = parseInt(Vote.dataValues.vote_value);
+        } else {
+          postData.dataValues.hasVoted = 0;
+        }
+      }
+
+      const whereClause = { postId: post_id };
+
+      const commentData = await Comment.findAll({
+        where: whereClause,
+        attributes: {
+          include: [
+            [
+              Sequelize.fn("SUM", Sequelize.col("commentvotes.vote_value")),
+              "commentVotes",
+            ],
+          ],
+        },
+        include: [
+          { model: CommentVote, attributes: [] },
+          { model: User, attributes: ["username"] },
+        ],
+        group: ["commentvotes.commentId"],
+      });
+
+      if (req.user) {
+        for (const comment of commentData) {
+          const Vote = await CommentVote.findOne({
+            where: {
+              commentId: comment.dataValues.id,
+              userId: req.user.id,
+            },
+          });
+          if (Vote) {
+            comment.dataValues.hasVoted = parseInt(Vote.dataValues.vote_value);
+          } else {
+            comment.dataValues.hasVoted = 0;
+          }
+        }
+      }
+      res.send({
+        postData,
+        commentData,
+      });
+    } catch (e) {
+      res.status(500).send({ error: e.message });
+    }
   }
-});
+);
 
 //comment on a post
 
