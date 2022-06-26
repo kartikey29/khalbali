@@ -42,18 +42,6 @@ router.get(
       let FoundPost = await Post.findAll({
         where: search,
         subQuery: false,
-        attributes: {
-          include: [
-            [
-              Sequelize.fn("COUNT", Sequelize.col("comments.id")),
-              "PostComments",
-            ],
-            [
-              Sequelize.fn("SUM", Sequelize.col("votes.vote_value")),
-              "postVotes",
-            ],
-          ],
-        },
         include: [
           { model: User, attributes: ["username"] },
           {
@@ -61,14 +49,27 @@ router.get(
             attributes: ["name"],
             where: whereClause,
           },
-          { model: comments, attributes: [] },
-          { model: PostVote, attributes: [] },
         ],
-        group: ["comments.postId"],
-        group: ["votes.postId"],
         limit,
         offset,
       });
+
+      for (const post of FoundPost) {
+        const votes = await PostVote.sum("vote_value", {
+          where: {
+            postId: post.dataValues.id,
+          },
+        });
+        post.dataValues.postVotes = votes;
+
+        const postComments = await comments.count("id", {
+          where: {
+            postId: post.dataValues.id,
+          },
+        });
+
+        post.dataValues.PostComments = postComments;
+      }
 
       //give vote of user when logged in
       if (req.user) {

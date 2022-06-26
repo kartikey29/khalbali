@@ -34,25 +34,27 @@ router.get(
       const { post_id } = req.params;
       const postData = await Post.findOne({
         where: { id: post_id },
-        attributes: {
-          include: [
-            [
-              Sequelize.fn("COUNT", Sequelize.col("comments.id")),
-              "PostComments",
-            ],
-            [
-              Sequelize.fn("SUM", Sequelize.col("votes.vote_value")),
-              "postVotes",
-            ],
-          ],
-        },
+
         include: [
           { model: User, attributes: ["username"] },
           { model: Subreddit, attributes: ["name"] },
-          { model: Comment, attributes: [] },
-          { model: PostVote, attributes: [] },
         ],
       });
+
+      const votes = await PostVote.sum("vote_value", {
+        where: {
+          postId: postData.dataValues.id,
+        },
+      });
+      postData.dataValues.postVotes = votes;
+
+      const postComments = await Comment.count("id", {
+        where: {
+          postId: postData.dataValues.id,
+        },
+      });
+
+      postData.dataValues.PostComments = postComments;
 
       if (!postData) {
         return res
@@ -78,20 +80,20 @@ router.get(
 
       const commentData = await Comment.findAll({
         where: whereClause,
-        attributes: {
-          include: [
-            [
-              Sequelize.fn("SUM", Sequelize.col("commentvotes.vote_value")),
-              "commentVotes",
-            ],
-          ],
-        },
         include: [
           { model: CommentVote, attributes: [] },
           { model: User, attributes: ["username"] },
         ],
-        group: ["commentvotes.commentId"],
       });
+
+      for (const comment of commentData) {
+        const votes = await CommentVote.sum("vote_value", {
+          where: {
+            commentId: comment.dataValues.id,
+          },
+        });
+        comment.dataValues.commentVotes = votes;
+      }
 
       if (req.user) {
         for (const comment of commentData) {
