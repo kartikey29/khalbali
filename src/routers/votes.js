@@ -45,36 +45,6 @@ const checkVoteValid = async (item_id, vote_value, vote_type) => {
   return { status, error };
 };
 
-router.get("/:voteType", async (req, res) => {
-  try {
-    const { voteType, error } = checkVoteType(req.params.voteType);
-    if (error) {
-      return res.status(400).send({ error });
-    }
-    if (voteType == "post") {
-      const selectPostVotes = await Vote.findAll();
-      if (selectPostVotes.length == 0) {
-        return res.status(500).send({ message: "No votes available" });
-      } else {
-        return res.send(selectPostVotes);
-      }
-    }
-    if (voteType == "comment") {
-      const selectCommentVotes = await commentVote.findAll();
-
-      if (selectCommentVotes.length == 0) {
-        return res.status(500).send({ message: "No votes available" });
-      } else {
-        return res.send(selectCommentVotes);
-      }
-    }
-  } catch (e) {
-    res.status(500).send({ error: e.message });
-  }
-});
-
-//make a vote
-
 router.post(
   "/:voteType",
   passport.authenticate("jwt", { session: false }),
@@ -102,7 +72,7 @@ router.post(
         const findPost = await Vote.findOne({
           where: [{ postId: item_id }, { userId: user_id }],
         });
-        if (!findPost || findPost.length == 0) {
+        if (!findPost) {
           const selectPostVotes = await Vote.create({
             vote_value: vote_value,
             postId: item_id,
@@ -114,12 +84,14 @@ router.post(
             return res.send(selectPostVotes);
           }
         } else {
-          const updatePostVote = await Vote.update(
-            { vote_value: vote_value },
-            { where: { id: findPost.id } }
-          );
+          const updatePostVote = await Vote.findOne({
+            where: { id: findPost.id },
+          });
           if (updatePostVote) {
-            return res.send({ message: "vote updated" });
+            await updatePostVote.update({ vote_value: vote_value });
+          }
+          if (updatePostVote) {
+            return res.send(updatePostVote);
           }
         }
       }
@@ -128,7 +100,7 @@ router.post(
         const findComment = await commentVote.findOne({
           where: [{ commentId: item_id }, { userId: user_id }],
         });
-        console.log(findComment.id);
+
         if (!findComment || findComment.length == 0) {
           const selectCommentVotes = await commentVote.create({
             vote_value: vote_value,
@@ -142,11 +114,13 @@ router.post(
             return res.send(selectCommentVotes);
           }
         } else {
-          const updateCommentVote = await commentVote.update(
-            { vote_value: vote_value },
-            { where: { id: findComment.id } }
-          );
-          return res.send({ message: "vote updated" });
+          const comment = await commentVote.findOne({
+            where: { id: findComment.id },
+          });
+
+          await comment.update({ vote_value: vote_value });
+
+          return res.send(comment);
         }
       }
     } catch (e) {
