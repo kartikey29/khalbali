@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
-  const CommentVotes = sequelize.define('commentvote', {
-    vote_value: { type: DataTypes.ENUM('1', '-1', '0'), allowNull: false },
-  })
+  const CommentVotes = sequelize.define("commentvote", {
+    vote_value: { type: DataTypes.INTEGER, allowNull: false },
+  });
 
-  return CommentVotes
-}
+  return CommentVotes;
+};
