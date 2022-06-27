@@ -80,10 +80,7 @@ router.get(
 
       const commentData = await Comment.findAll({
         where: whereClause,
-        include: [
-          { model: CommentVote, attributes: [] },
-          { model: User, attributes: ["username"] },
-        ],
+        include: [{ model: User, attributes: ["username"] }],
       });
 
       for (const comment of commentData) {
@@ -152,9 +149,37 @@ router.post(
         commentId: newComment.id,
         vote_value: 1,
       });
-      console.log(newCommentVote);
       newCommentVote.save();
-      res.redirect(`/comments/${postId}`);
+
+      const commentData = await Comment.findOne({
+        where: { id: newComment.dataValues.id },
+        include: [{ model: User, attributes: ["username"] }],
+      });
+
+      const votes = await CommentVote.sum("vote_value", {
+        where: {
+          commentId: commentData.dataValues.id,
+        },
+      });
+      commentData.dataValues.commentVotes = votes;
+
+      if (req.user) {
+        const Vote = await CommentVote.findOne({
+          where: {
+            commentId: commentData.dataValues.id,
+            userId: req.user.id,
+          },
+        });
+        if (Vote) {
+          commentData.dataValues.hasVoted = parseInt(
+            Vote.dataValues.vote_value
+          );
+        } else {
+          commentData.dataValues.hasVoted = 0;
+        }
+      }
+
+      return res.send(commentData);
     } catch (e) {
       res.status(400).send({ error: e.message });
     }
