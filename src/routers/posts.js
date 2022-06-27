@@ -62,7 +62,7 @@ router.get(
         });
         post.dataValues.postVotes = votes;
 
-        const postComments = await comments.count("id", {
+        const postComments = await comments.count({
           where: {
             postId: post.dataValues.id,
           },
