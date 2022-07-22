@@ -18,7 +18,7 @@ router.get(
   passport.authenticate(["jwt", "anonymous"], { session: false }),
   async (req, res) => {
     try {
-      const { subreddit, page, title } = req.query;
+      const { subreddit, page, title, sortAll } = req.query;
       const limit = 10;
       let whereClause = {};
 
@@ -27,6 +27,10 @@ router.get(
         whereClause = { name: subreddit };
       }
 
+      //if sort is not set to asc or descending
+      if (sortAll != "ASC" && sortAll != "DESC") {
+        return res.status(400).send("only ASC or DESC is allowed");
+      }
       //if to search specific title
       const search = title ? { title: { [Op.like]: `%${title}%` } } : null;
 
@@ -52,6 +56,7 @@ router.get(
         ],
         limit,
         offset,
+        order: [["createdAt", sortAll]],
       });
 
       for (const post of FoundPost) {
